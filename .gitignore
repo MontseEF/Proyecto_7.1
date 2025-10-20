@@ -1,0 +1,38 @@
+# Node
+
+node_modules/
+frontend/node_modules/
+backend/node_modules/
+
+# Builds
+frontend/dist/
+backend/dist/
+*.cache
+
+# Env
+.env
+*.env
+frontend/.env
+backend/.env
+
+# Logs
+*.log
+npm-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+
+# Coverage / tooling
+coverage/
+.vite/
+.eslintcache
+
+# Uploads del backend (mantén carpeta, ignora archivos)
+backend/uploads/*
+!backend/uploads/.gitignore
+!backend/uploads/.gitkeep
+
+# SO / Editor
+.DS_Store
+Thumbs.db
+.vscode/
+.idea/
