@@ -1,28 +1,22 @@
 const express = require('express');
 const cors = require('cors');
-const helmet = require('helmet');
-const rateLimit = require('express-rate-limit');
-const morgan = require('morgan');
-const path = require('path');
 require('dotenv').config();
+const connectDB = require('./config/db');
 
 const app = express();
-
-// Middlewares
-app.use(helmet());
-app.use(morgan('dev'));
-app.use(cors({ origin: process.env.CORS_ORIGIN || 'http://localhost:5173', credentials: true }));
+app.use(cors({ origin: 'http://localhost:5173', credentials: true }));
 app.use(express.json());
-app.use(rateLimit({ windowMs: 15 * 60 * 1000, max: 300 }));
 
-// Archivos estáticos (uploads)
-app.use('/uploads', express.static(path.join(__dirname, '..', 'uploads')));
+// Health
+app.get('/api/health', (_, res) => res.json({ ok: true, service: 'backend', ts: Date.now() }));
 
-// Rutas
-app.use('/api', require('./routes/router'));
+// Rutas reales
+const productsRouter = require('./routes/products');
+app.use('/api/products', productsRouter);
 
-// 404
-app.use('*', (_req, res) => res.status(404).json({ message: 'Ruta no encontrada' }));
-
+// Arranque seguro: primero DB, después server
 const PORT = process.env.PORT || 3000;
-app.listen(PORT, () => console.log(`Backend en http://localhost:${PORT}`));
+(async () => {
+  await connectDB();
+  app.listen(PORT, () => console.log(`Backend en http://localhost:${PORT}`));
+})();
