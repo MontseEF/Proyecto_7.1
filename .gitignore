@@ -4,9 +4,12 @@ node_modules/
 frontend/node_modules/
 backend/node_modules/
 
+
 # Builds
+dist/
 frontend/dist/
 backend/dist/
+.vite/
 *.cache
 
 # Env
@@ -20,6 +23,8 @@ backend/.env
 npm-debug.log*
 yarn-error.log*
 pnpm-debug.log*
+.DS_Store
+Thumbs.db
 
 # Coverage / tooling
 coverage/

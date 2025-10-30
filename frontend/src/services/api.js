@@ -2,8 +2,8 @@ const BASE_URL = import.meta.env.VITE_API_URL;
 
 async function http(path, options = {}) {
   const res = await fetch(`${BASE_URL}${path}`, {
-    headers: { 'Content-Type': 'application/json', ...(options.headers || {}) },
-    credentials: 'include',
+    headers: { "Content-Type": "application/json", ...(options.headers || {}) },
+    credentials: "include",
     ...options,
   });
   if (!res.ok) {
@@ -14,7 +14,7 @@ async function http(path, options = {}) {
 }
 
 export const api = {
-  products: () => http('/api/products'),
+  get: (p) => http(p),
+  post: (p, body) => http(p, { method: "POST", body: JSON.stringify(body) }),
+  products: () => http("/api/products"),
 };
-
-export default api;

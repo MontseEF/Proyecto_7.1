@@ -1,41 +1,49 @@
-import { useEffect, useState } from 'react'
-import api from '../services/api'
+import { useEffect, useState } from "react";
 
 export default function Products() {
-  const [data, setData] = useState([])
-  const [loading, setLoading] = useState(true)
-  const [error, setError] = useState(null)
+  const [items, setItems] = useState([]);
+  const [err, setErr] = useState("");
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     (async () => {
       try {
-        const items = await api.products()
-        setData(items)
-      } catch (e) {
-        setError(e.message)
+        const res = await fetch(`${import.meta.env.VITE_API_URL}/api/products`);
+        if (!res.ok) throw new Error("HTTP " + res.status);
+        const json = await res.json();
+        setItems(json.data || json);
+      } catch (error) {
+        console.error(error);
+        setErr("No se pudo cargar el catálogo.");
       } finally {
-        setLoading(false)
+        setLoading(false);
       }
-    })()
-  }, [])
+    })();
+  }, []);
 
-  if (loading) return <p className="p-6">Cargando…</p>
-  if (error) return <p className="p-6 text-red-600">Error: {error}</p>
+  if (loading) return <p>Cargando catálogo…</p>;
+  if (err) return <p className="text-red-600">{err}</p>;
 
   return (
-    <div className="min-h-screen bg-gray-50 p-6">
+    <section>
       <h1 className="text-2xl font-bold mb-4">Productos</h1>
-      <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-        {data.map(p => (
-          <article key={p._id} className="rounded-xl border bg-white p-4">
-            <h3 className="font-semibold">{p.name}</h3>
-            <p className="text-sm text-gray-600">{p.description}</p>
-            <p className="mt-2 font-bold">${p.price}</p>
+
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+        {items.map((p) => (
+          <article key={p._id || p.id} className="border rounded-lg p-4 shadow-sm">
+            {/* Si subiste imágenes al /public, usa p.image como '/archivo.ext' */}
+            <img
+              src={p.image || "/martillo.jpg"}
+              alt={p.name}
+              className="h-40 w-full object-contain mb-3"
+              loading="lazy"
+            />
+            <h2 className="font-semibold">{p.name}</h2>
+            <p className="text-sm text-gray-600">{p.brand}</p>
+            <p className="mt-2 font-bold">${Number(p.price || 0).toLocaleString("es-CL")}</p>
           </article>
         ))}
       </div>
-    </div>
-  )
+    </section>
+  );
 }
-
- console.log('API URL:', import.meta.env.VITE_API_URL)
