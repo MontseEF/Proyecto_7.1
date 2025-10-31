@@ -1,34 +1,26 @@
 import React from "react";
 import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 
-import PrivateRoute from "../components/PrivateRoute";
-import MainLayout from "../components/layout/MainLayout";
-import AdminLayout from "../components/layout/AdminLayout";
+import AppLayout from "../components/layout/AppLayout.jsx";
+import PrivateRoute from "../components/PrivateRoute.jsx";
 
-// Pages (ajusta los nombres si usan otro)
-import Home from "../pages/Home";
-import Products from "../pages/Products";
-import ProductDetail from "../pages/ProductDetail";
-import Cart from "../pages/Cart";
-import Login from "../pages/Login";
-import Register from "../pages/Register";
-import Success from "../pages/Success";
-import Cancel from "../pages/Cancel";
-import Dashboard from "../pages/Dashboard"; 
-
-function ScrollToTop() {
-  React.useEffect(() => { window.scrollTo({ top: 0, behavior: "smooth" }); }, []);
-  return null;
-}
+// Pages
+import Home from "../pages/Home.jsx";
+import Products from "../pages/Products.jsx";
+import ProductDetail from "../pages/ProductDetail.jsx";
+import Cart from "../pages/Cart.jsx";
+import Login from "../pages/Login.jsx";
+import Register from "../pages/Register.jsx";
+import Success from "../pages/Success.jsx";
+import Cancel from "../pages/Cancel.jsx";
 
 export default function AppRouter() {
   return (
     <BrowserRouter>
-      <ScrollToTop />
       <Routes>
-        {/* Pública */}
-        <Route element={<MainLayout />}>
-          <Route path="/" element={<Home />} />
+        {/* PÚBLICAS */}
+        <Route element={<AppLayout />}>
+          <Route index element={<Home />} />
           <Route path="/productos" element={<Products />} />
           <Route path="/productos/:id" element={<ProductDetail />} />
           <Route path="/cart" element={<Cart />} />
@@ -38,18 +30,17 @@ export default function AppRouter() {
           <Route path="/cancel" element={<Cancel />} />
         </Route>
 
-        {/* Privada */}
+        {/* RUTA PROTEGIDA – TEMPORALMENTE SOLO MUESTRA CART */}
         <Route
           path="/panel"
           element={
             <PrivateRoute>
-              <AdminLayout />
+              <Cart />
             </PrivateRoute>
           }
-        >
-          <Route index element={<Dashboard />} />
-        </Route>
+        />
 
+        {/* Catch-all */}
         <Route path="*" element={<Navigate to="/" replace />} />
       </Routes>
     </BrowserRouter>

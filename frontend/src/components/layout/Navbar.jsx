@@ -1,70 +1,34 @@
-import { Link, NavLink } from "react-router-dom";
-import { useAuth } from "../../contexts/useAuth"; // tu hook
-// el logo está directamente en /public
-const logo = "/logo.jpeg";
+import { Outlet, Link, NavLink } from "react-router-dom";
 
-export default function Navbar() {
-  const { user, logout } = useAuth();
-
+export default function AppLayout() {
   return (
-    <header className="sticky top-0 z-40 bg-brand-700 text-white shadow">
-      <nav className="mx-auto max-w-7xl px-3 md:px-6 lg:px-8">
-        <div className="flex items-center justify-between py-3">
-          {/* brand un pelito a la izquierda */}
-          <Link to="/" className="flex items-center gap-2 -ml-1">
-            <img src={logo} alt="Ferretería Zona Franca" className="h-8 w-8 rounded" />
-            <span className="text-lg font-semibold">Ferretería Zona Franca</span>
+    <div className="min-h-screen flex flex-col bg-slate-50">
+
+      {/* NAV */}
+      <header className="bg-white border-b shadow-sm">
+        <nav className="max-w-6xl mx-auto px-4 py-3 flex items-center justify-between">
+          <Link to="/" className="flex items-center gap-2">
+            <img src="/logo.jpeg" alt="Ferretería Zona Franca" className="h-10 w-auto rounded-md"/>
+            <span className="font-bold text-lg text-slate-800">Ferretería Zona Franca</span>
           </Link>
 
-          <ul className="flex items-center gap-6 text-sm">
-            <li>
-              <NavLink
-                to="/"
-                className={({ isActive }) =>
-                  isActive ? "underline font-semibold" : "hover:underline"
-                }
-              >
-                Inicio
-              </NavLink>
-            </li>
+          <div className="flex items-center gap-6 text-sm font-medium">
+            <NavLink to="/" className="hover:text-blue-600">Inicio</NavLink>
+            <NavLink to="/cart" className="hover:text-blue-600">Carrito</NavLink>
+            <NavLink to="/login" className="hover:text-blue-600">Ingresar</NavLink>
+          </div>
+        </nav>
+      </header>
 
-            {/* onepage + ruta directa */}
-            <li>
-              <a href="/#productos" className="hover:underline">Productos</a>
-            </li>
+      {/* CONTENT */}
+      <main className="flex-1">
+        <Outlet />
+      </main>
 
-            {user ? (
-              <>
-                <li className="text-sm opacity-90">
-                  Hola, {user.username || "usuario"}
-                </li>
-                <li>
-                  <button
-                    onClick={logout}
-                    className="rounded-xl bg-white/15 px-3 py-1.5 text-sm hover:bg-white/25"
-                  >
-                    Salir
-                  </button>
-                </li>
-              </>
-            ) : (
-              <li>
-                <NavLink
-                  to="/login"
-                  className={({ isActive }) =>
-                    isActive
-                      ? "underline font-semibold"
-                      : "rounded-xl bg-white/10 px-3 py-1.5 hover:bg-white/20"
-                  }
-                >
-                  Iniciar sesión
-                </NavLink>
-              </li>
-            )}
-          </ul>
-        </div>
-      </nav>
-    </header>
+      {/* FOOTER */}
+      <footer className="bg-white border-t py-4 text-center text-xs text-slate-500">
+        © {new Date().getFullYear()} Ferretería Zona Franca — Herramientas & Construcción
+      </footer>
+    </div>
   );
 }
-

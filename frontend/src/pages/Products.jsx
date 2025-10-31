@@ -1,42 +1,20 @@
-import React, { useEffect, useState } from "react";
 import ProductCard from "../components/ProductCard.jsx";
-import { api } from "../services/api";
-import LoadingSpinner from "../components/common/LoadingSpinner.jsx";
-import ErrorMessage from "../components/common/ErrorMessage.jsx";
-import { Link } from "react-router-dom";
+
+const products = [
+  { name: "Taladro Percutor", price: 54990, stock: 4, img: "/taladro.png", description: "800W – uso profesional" },
+  { name: "Martillo Carpintero", price: 7990, stock: 10, img: "/martillo.jpg", description: "Acero forjado, mango ergonómico" },
+  { name: "Sierra Circular", price: 89990, stock: 2, img: "/sierra-circular.webp", description: "185mm, 1400W" },
+  { name: "Atornillador", price: 24990, stock: 6, img: "/atornillador.webp", description: "Eléctrico con batería" },
+  { name: "Saco Cemento 25kg", price: 5990, stock: 30, img: "/cemento.jpg", description: "Cemento gris alta calidad" },
+  { name: "Pintura Latex 1 galón", price: 18990, stock: 12, img: "/pintura.webp", description: "Interior/exterior" },
+];
 
 export default function Products() {
-  const [items, setItems] = useState([]);
-  const [loading, setLoading] = useState(true);
-  const [err, setErr] = useState("");
-
-  useEffect(() => {
-    (async () => {
-      try {
-        const { data } = await api.products();
-        setItems(data);
-      } catch (e) {
-        console.error(e);
-        setErr("No se pudo cargar el catálogo.");
-      } finally {
-        setLoading(false);
-      }
-    })();
-  }, []);
-
-  if (loading) return <LoadingSpinner />;
-
   return (
-    <section className="max-w-6xl mx-auto px-4 py-10">
-      <h1 className="text-2xl font-bold text-slate-900 mb-6">Productos</h1>
-      <ErrorMessage>{err}</ErrorMessage>
-      <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-5">
-        {items.map((p) => (
-          <Link key={p._id || p.id} to={`/productos/${p._id || p.id}`} className="block">
-            <ProductCard product={p} />
-          </Link>
-        ))}
-      </div>
-    </section>
+    <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6">
+      {products.map((p, i) => (
+        <ProductCard key={i} product={p} />
+      ))}
+    </div>
   );
 }

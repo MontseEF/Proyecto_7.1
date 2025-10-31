@@ -2,40 +2,41 @@ import { useCart } from "../contexts/CartContext.jsx";
 
 export default function ProductCard({ product }) {
   const { add } = useCart();
-  const src = product.imageUrl?.startsWith("http")
-    ? product.imageUrl
-    : product.image || product.imageUrl || "/placeholder.png";
 
-  const id = product._id || product.id;
-  const title = product.title || product.name || "Producto";
-  const price = Number(product.price || 0);
-  const stock = Number(product.stock ?? 0);
+  const img = product.img || product.image || product.imageUrl;
 
   return (
-    <article className="rounded-2xl border border-slate-200 p-4 shadow-sm hover:shadow-md transition">
+    <div className="bg-white border rounded-xl p-3 shadow-sm hover:shadow-md transition">
       <img
-        src={src}
-        alt={title}
-        className="w-full h-44 object-cover rounded-xl bg-slate-100"
-        onError={(e) => { e.currentTarget.src = "/placeholder.png"; }}
+        src={img}
+        alt={product.name}
+        className="w-full h-40 object-cover rounded-lg"
       />
-      <h3 className="mt-3 font-semibold text-slate-900">{title}</h3>
-      {product.description ? (
-        <p className="text-sm text-slate-600 min-h-10">{product.description}</p>
-      ) : null}
-      <div className="mt-2 flex items-center justify-between">
-        <span className="font-semibold">${price.toLocaleString("es-CL")}</span>
-        <span className={`text-xs px-2 py-1 rounded-full ${stock > 0 ? "bg-green-100 text-green-700" : "bg-slate-200 text-slate-600"}`}>
-          {stock > 0 ? `Stock: ${stock}` : "No disponible"}
+
+      <h3 className="mt-3 font-semibold text-slate-900">{product.name}</h3>
+
+      <p className="text-sm text-slate-600 mb-2 line-clamp-2">
+        {product.description}
+      </p>
+
+      <div className="flex justify-between items-center text-sm mb-3">
+        <span className="font-semibold text-slate-900">${product.price.toLocaleString()}</span>
+        <span className={`px-2 py-1 rounded-full text-xs ${product.stock > 0 ? "bg-green-100 text-green-700" : "bg-red-100 text-red-600"}`}>
+          {product.stock > 0 ? `Stock: ${product.stock}` : "Sin stock"}
         </span>
       </div>
+
       <button
-        disabled={stock <= 0}
-        onClick={() => add({ id, title, price, imageUrl: src })}
-        className={`mt-3 w-full rounded-xl py-2 font-medium ${stock > 0 ? "bg-blue-600 text-white hover:bg-blue-700" : "bg-slate-200 text-slate-500 cursor-not-allowed"}`}
+        disabled={product.stock <= 0}
+        onClick={() => add(product)}
+        className={`w-full py-2 rounded-lg text-white font-medium ${
+          product.stock > 0
+            ? "bg-blue-600 hover:bg-blue-700"
+            : "bg-gray-400 cursor-not-allowed"
+        }`}
       >
-        {stock > 0 ? "Agregar al carrito" : "Sin stock"}
+        {product.stock > 0 ? "Agregar al carrito" : "No disponible"}
       </button>
-    </article>
+    </div>
   );
 }

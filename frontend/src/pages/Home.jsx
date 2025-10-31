@@ -1,20 +1,23 @@
+import Products from "./Products.jsx";
+
 export default function Home() {
   return (
-    <main id="home">
-      <section className="bg-gradient-to-br from-brand-700 to-brand-800 text-white">
-        <div className="mx-auto max-w-7xl px-4 py-16">
-          <h1 className="text-3xl font-bold">Bienvenida 👋</h1>
-          <p className="mt-2 text-brand-100">
-            Revisa el catálogo en <a href="/#productos" className="underline">Productos</a>.
+    <div>
+      {/* HERO */}
+      <section className="bg-white py-14 border-b">
+        <div className="max-w-6xl mx-auto px-4 text-center">
+          <h1 className="text-4xl font-bold text-slate-800">Ferretería Zona Franca 🛠️</h1>
+          <p className="text-slate-600 text-lg mt-2">
+            Todo para tu proyecto — calidad y precios bajos 🔩
           </p>
         </div>
       </section>
 
-    
-      <section id="contacto" className="mx-auto max-w-7xl px-4 py-16">
-        <h2 className="text-2xl font-bold text-gray-900">Contacto</h2>
-        <p className="mt-2 text-gray-600">Escríbenos o visítanos en nuestra tienda.</p>
+      {/* PRODUCTS */}
+      <section className="max-w-6xl mx-auto px-4 py-10">
+        <h2 className="text-2xl font-bold mb-6">Productos destacados</h2>
+        <Products />
       </section>
-    </main>
+    </div>
   );
 }
