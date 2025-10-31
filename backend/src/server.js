@@ -1,36 +1,38 @@
-const express = require('express');
-const cors = require('cors');
-require('dotenv').config();
-const connectDB = require('./config/db');
+require("dotenv/config");
+const express = require("express");
+const cors = require("cors");
+const helmet = require("helmet");
+const morgan = require("morgan");
+const mongoose = require("mongoose");
+
+const apiRouter = require("./router");
 
 const app = express();
 
-app.use(cors({
-  origin: process.env.CORS_ORIGIN || 'http://localhost:5173',
-  credentials: true,
-}));
+// Middlewares
 app.use(express.json());
-
-// Healthcheck
-app.get('/api/health', (_, res) =>
-  res.json({ ok: true, service: 'backend', ts: Date.now() })
+app.use(helmet());
+app.use(morgan("dev"));
+app.use(
+  cors({
+    origin: process.env.FRONTEND_URL || "http://localhost:5173",
+    credentials: true,
+  })
 );
 
-// Rutas
-const productsRouter = require('./routes/products');
-app.use('/api/products', productsRouter);
+// Conexión Mongo
+if (!process.env.MONGO_URI) {
+  console.warn("Falta MONGO_URI en .env (Mongo no se conectará).");
+} else {
+  mongoose
+    .connect(process.env.MONGO_URI)
+    .then(() => console.log("Conectado a MongoDB"))
+    .catch((e) => console.error("Error MongoDB:", e.message));
+}
 
-// Arranque: primero DB, luego server
-const PORT = process.env.PORT || 4000;
+// Rutas bajo /api
+app.use("/api", apiRouter);
 
-(async () => {
-  try {
-    await connectDB();
-    app.listen(PORT, () =>
-      console.log(`Backend en http://localhost:${PORT}`)
-    );
-  } catch (err) {
-    console.error('No se pudo iniciar el servidor porque la DB falló.');
-    process.exit(1);
-  }
-})();
+// Arranque
+const PORT = process.env.PORT || 3000;
+app.listen(PORT, () => console.log(`Backend escuchando en puerto ${PORT}`));

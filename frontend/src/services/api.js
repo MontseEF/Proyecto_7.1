@@ -1,20 +1,27 @@
-const BASE_URL = import.meta.env.VITE_API_URL;
+const BASE = import.meta.env.VITE_API_URL || "http://localhost:3000/api";
+let AUTH = "";
 
-async function http(path, options = {}) {
-  const res = await fetch(`${BASE_URL}${path}`, {
-    headers: { "Content-Type": "application/json", ...(options.headers || {}) },
-    credentials: "include",
-    ...options,
+export function setAuthToken(token) {
+  AUTH = token || "";
+}
+
+async function req(path, { method = "GET", body } = {}) {
+  const headers = { "Content-Type": "application/json" };
+  if (AUTH) headers["Authorization"] = `Bearer ${AUTH}`;
+  const res = await fetch(`${BASE}${path}`, {
+    method,
+    headers,
+    body: body ? JSON.stringify(body) : undefined,
   });
-  if (!res.ok) {
-    const text = await res.text().catch(() => res.statusText);
-    throw new Error(text || `HTTP ${res.status}`);
-  }
-  return res.json();
+  const data = await res.json().catch(() => ({}));
+  if (!res.ok) throw { response: { data, status: res.status } };
+  return { data };
 }
 
 export const api = {
-  get: (p) => http(p),
-  post: (p, body) => http(p, { method: "POST", body: JSON.stringify(body) }),
-  products: () => http("/api/products"),
+  get: (p) => req(p),
+  post: (p, body) => req(p, { method: "POST", body }),
+  // catálogo
+  products: () => req("/products"),
+  product: (id) => req(`/products/${id}`),
 };

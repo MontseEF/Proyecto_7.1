@@ -1,19 +1,22 @@
-import { useEffect, useState } from "react";
+import React, { useEffect, useState } from "react";
+import ProductCard from "../components/ProductCard.jsx";
+import { api } from "../services/api";
+import LoadingSpinner from "../components/common/LoadingSpinner.jsx";
+import ErrorMessage from "../components/common/ErrorMessage.jsx";
+import { Link } from "react-router-dom";
 
 export default function Products() {
   const [items, setItems] = useState([]);
-  const [err, setErr] = useState("");
   const [loading, setLoading] = useState(true);
+  const [err, setErr] = useState("");
 
   useEffect(() => {
     (async () => {
       try {
-        const res = await fetch(`${import.meta.env.VITE_API_URL}/api/products`);
-        if (!res.ok) throw new Error("HTTP " + res.status);
-        const json = await res.json();
-        setItems(json.data || json);
-      } catch (error) {
-        console.error(error);
+        const { data } = await api.products();
+        setItems(data);
+      } catch (e) {
+        console.error(e);
         setErr("No se pudo cargar el catálogo.");
       } finally {
         setLoading(false);
@@ -21,27 +24,17 @@ export default function Products() {
     })();
   }, []);
 
-  if (loading) return <p>Cargando catálogo…</p>;
-  if (err) return <p className="text-red-600">{err}</p>;
+  if (loading) return <LoadingSpinner />;
 
   return (
-    <section>
-      <h1 className="text-2xl font-bold mb-4">Productos</h1>
-
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+    <section className="max-w-6xl mx-auto px-4 py-10">
+      <h1 className="text-2xl font-bold text-slate-900 mb-6">Productos</h1>
+      <ErrorMessage>{err}</ErrorMessage>
+      <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-5">
         {items.map((p) => (
-          <article key={p._id || p.id} className="border rounded-lg p-4 shadow-sm">
-            {/* Si subiste imágenes al /public, usa p.image como '/archivo.ext' */}
-            <img
-              src={p.image || "/martillo.jpg"}
-              alt={p.name}
-              className="h-40 w-full object-contain mb-3"
-              loading="lazy"
-            />
-            <h2 className="font-semibold">{p.name}</h2>
-            <p className="text-sm text-gray-600">{p.brand}</p>
-            <p className="mt-2 font-bold">${Number(p.price || 0).toLocaleString("es-CL")}</p>
-          </article>
+          <Link key={p._id || p.id} to={`/productos/${p._id || p.id}`} className="block">
+            <ProductCard product={p} />
+          </Link>
         ))}
       </div>
     </section>
