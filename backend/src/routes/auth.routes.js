@@ -1,62 +1,63 @@
-// backend/src/routes/auth.routes.js
-const express = require("express");
+const { Router } = require("express");
 const bcrypt = require("bcryptjs");
-const User = require("../models/User");
-const { sign } = require("../utils/jwt");
+const jwt = require("jsonwebtoken");
+const User = require("../models/User"); // CJS: sin extensión
 
-const router = express.Router();
+const router = Router();
 
-/**
- * POST /api/auth/register
- * body: { name, email, password }
- */
+const sign = (user) =>
+  jwt.sign(
+    { id: user._id.toString(), email: user.email, role: user.role },
+    process.env.JWT_SECRET,
+    { expiresIn: "7d" }
+  );
+
+// POST /api/auth/register
 router.post("/register", async (req, res) => {
   try {
     const { name, email, password } = req.body || {};
     if (!name || !email || !password) {
-      return res.status(400).json({ message: "name, email y password son requeridos" });
+      return res.status(400).json({ msg: "Faltan campos" });
     }
     const exists = await User.findOne({ email });
-    if (exists) return res.status(409).json({ message: "El email ya está registrado" });
+    if (exists) return res.status(400).json({ msg: "Usuario ya existe" });
 
-    const hash = await bcrypt.hash(password, 10);
-    const user = await User.create({ name, email, password: hash });
+    const hashed = await bcrypt.hash(String(password), 10);
+    const user = await User.create({ name, email, password: hashed, role: "user" });
 
-    const token = sign({ id: user._id, email: user.email, role: user.role });
+    const token = sign(user);
     return res.json({
       token,
       user: { id: user._id, name: user.name, email: user.email, role: user.role },
     });
-  } catch (e) {
-    console.error("Register error:", e.message);
-    return res.status(500).json({ message: "No se pudo registrar" });
+  } catch (err) {
+    console.error("auth/register:", err.message);
+    return res.status(500).json({ msg: "Error en registro" });
   }
 });
 
-/**
- * POST /api/auth/login
- * body: { email, password }
- */
+// POST /api/auth/login
 router.post("/login", async (req, res) => {
   try {
     const { email, password } = req.body || {};
-    if (!email || !password) return res.status(400).json({ message: "email y password requeridos" });
+    if (!email || !password) return res.status(400).json({ msg: "Faltan credenciales" });
 
     const user = await User.findOne({ email });
-    if (!user) return res.status(401).json({ message: "Credenciales inválidas" });
+    if (!user) return res.status(400).json({ msg: "Credenciales inválidas" });
 
-    const ok = await bcrypt.compare(password, user.password);
-    if (!ok) return res.status(401).json({ message: "Credenciales inválidas" });
+    const ok = await bcrypt.compare(String(password), user.password);
+    if (!ok) return res.status(400).json({ msg: "Credenciales inválidas" });
 
-    const token = sign({ id: user._id, email: user.email, role: user.role });
+    const token = sign(user);
     return res.json({
       token,
       user: { id: user._id, name: user.name, email: user.email, role: user.role },
     });
-  } catch (e) {
-    console.error("Login error:", e.message);
-    return res.status(500).json({ message: "No se pudo iniciar sesión" });
+  } catch (err) {
+    console.error("auth/login:", err.message);
+    return res.status(500).json({ msg: "Error en login" });
   }
 });
 
 module.exports = router;
+
