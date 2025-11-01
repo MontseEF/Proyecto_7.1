@@ -1,19 +1,17 @@
-// src/pages/Profile.jsx
-import { useAuth } from "../contexts/AuthContext.jsx";
+import { useAuth } from "../contexts/AuthContext";
 
 export default function Profile() {
   const { user } = useAuth();
+
+  if (!user) return <p>No has iniciado sesión.</p>;
+
   return (
-    <div className="max-w-3xl mx-auto p-6">
-      <h1 className="text-2xl font-bold mb-4">Mi Perfil</h1>
-      {user ? (
-        <div className="space-y-2">
-          <p><b>Nombre:</b> {user.name ?? "—"}</p>
-          <p><b>Email:</b> {user.email ?? "—"}</p>
-        </div>
-      ) : (
-        <p>No has iniciado sesión.</p>
-      )}
+    <div style={{ padding: "20px" }}>
+      <h2>Perfil</h2>
+      <h3>👋 Bienvenida, {user.name || user.email || "usuario"}!</h3>
+      
+      <p><strong>Nombre:</strong> {user.name || "No registrado"}</p>
+      <p><strong>Email:</strong> {user.email || "No disponible"}</p>
     </div>
   );
 }
