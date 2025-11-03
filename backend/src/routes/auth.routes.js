@@ -1,63 +1,96 @@
-const { Router } = require("express");
+const express = require("express");
 const bcrypt = require("bcryptjs");
-const jwt = require("jsonwebtoken");
-const User = require("../models/User"); // CJS: sin extensión
+const User = require("../models/User");
+const { sign } = require("../utils/jwt");
 
-const router = Router();
+const router = express.Router();
 
-const sign = (user) =>
-  jwt.sign(
-    { id: user._id.toString(), email: user.email, role: user.role },
-    process.env.JWT_SECRET,
-    { expiresIn: "7d" }
-  );
-
-// POST /api/auth/register
+/**
+ * POST /api/auth/register
+ * body: { name, email, password }
+ */
 router.post("/register", async (req, res) => {
   try {
     const { name, email, password } = req.body || {};
+    
+    // Validaciones
     if (!name || !email || !password) {
-      return res.status(400).json({ msg: "Faltan campos" });
+      return res.status(400).json({ message: "Nombre, email y contraseña son requeridos" });
     }
-    const exists = await User.findOne({ email });
-    if (exists) return res.status(400).json({ msg: "Usuario ya existe" });
 
-    const hashed = await bcrypt.hash(String(password), 10);
-    const user = await User.create({ name, email, password: hashed, role: "user" });
+    if (password.length < 6) {
+      return res.status(400).json({ message: "La contraseña debe tener al menos 6 caracteres" });
+    }
 
-    const token = sign(user);
-    return res.json({
+    // Verificar si el email ya existe
+    const exists = await User.findOne({ email: email.toLowerCase() });
+    if (exists) {
+      return res.status(409).json({ message: "El email ya está registrado" });
+    }
+
+    // Crear usuario
+    const hash = await bcrypt.hash(password, 12);
+    const user = await User.create({ 
+      name: name.trim(), 
+      email: email.toLowerCase().trim(), 
+      password: hash 
+    });
+
+    // Generar token
+    const token = sign({ id: user._id, email: user.email, role: user.role });
+    
+    console.log("✅ Usuario registrado:", user.email);
+    
+    return res.status(201).json({
+      message: "Usuario registrado exitosamente",
       token,
       user: { id: user._id, name: user.name, email: user.email, role: user.role },
     });
-  } catch (err) {
-    console.error("auth/register:", err.message);
-    return res.status(500).json({ msg: "Error en registro" });
+  } catch (e) {
+    console.error("❌ Register error:", e.message);
+    return res.status(500).json({ message: "Error interno del servidor" });
   }
 });
 
-// POST /api/auth/login
+/**
+ * POST /api/auth/login
+ * body: { email, password }
+ */
 router.post("/login", async (req, res) => {
   try {
     const { email, password } = req.body || {};
-    if (!email || !password) return res.status(400).json({ msg: "Faltan credenciales" });
+    
+    // Validaciones
+    if (!email || !password) {
+      return res.status(400).json({ message: "Email y contraseña son requeridos" });
+    }
 
-    const user = await User.findOne({ email });
-    if (!user) return res.status(400).json({ msg: "Credenciales inválidas" });
+    // Buscar usuario
+    const user = await User.findOne({ email: email.toLowerCase().trim() });
+    if (!user) {
+      return res.status(401).json({ message: "Email o contraseña incorrectos" });
+    }
 
-    const ok = await bcrypt.compare(String(password), user.password);
-    if (!ok) return res.status(400).json({ msg: "Credenciales inválidas" });
+    // Verificar contraseña
+    const isValid = await bcrypt.compare(password, user.password);
+    if (!isValid) {
+      return res.status(401).json({ message: "Email o contraseña incorrectos" });
+    }
 
-    const token = sign(user);
+    // Generar token
+    const token = sign({ id: user._id, email: user.email, role: user.role });
+    
+    console.log("Usuario logueado:", user.email);
+    
     return res.json({
+      message: "Inicio de sesión exitoso",
       token,
       user: { id: user._id, name: user.name, email: user.email, role: user.role },
     });
-  } catch (err) {
-    console.error("auth/login:", err.message);
-    return res.status(500).json({ msg: "Error en login" });
+  } catch (e) {
+    console.error("Login error:", e.message);
+    return res.status(500).json({ message: "Error interno del servidor" });
   }
 });
 
 module.exports = router;
-

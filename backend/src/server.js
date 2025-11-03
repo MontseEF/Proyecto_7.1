@@ -1,44 +1,53 @@
-require("dotenv").config({ path: "./.env" });
+require("dotenv/config");
 const express = require("express");
 const cors = require("cors");
+const helmet = require("helmet");
+const morgan = require("morgan");
 const mongoose = require("mongoose");
 
-// Routers
-const authRouter = require("./routes/auth.routes");
-const productsRouter = require("./routes/products.routes");
-const stripeRouter = require("./routes/stripe.routes");
+const apiRouter = require("./router");
 
 const app = express();
-const PORT = process.env.PORT || 3000;
-const ORIGIN = process.env.CORS_ORIGIN || "http://localhost:5173";
 
-app.use(cors({ origin: ORIGIN, credentials: true }));
+// Middlewares
 app.use(express.json());
+app.use(helmet());
+app.use(morgan("dev"));
+app.use(
+  cors({
+    origin: process.env.CORS_ORIGIN || "http://localhost:5173",
+    credentials: true,
+  })
+);
 
-// ---------- Conexión Mongo (con guardas) ----------
-let MONGO_URI = (process.env.MONGODB_URI || process.env.MONGO_URI || "").trim();
-// por si alguien dejó comillas al copiar/pegar
-MONGO_URI = MONGO_URI.replace(/^"+|"+$/g, "").replace(/^'+|'+$/g, "");
-
-if (!MONGO_URI) {
-  console.error("Falta MONGODB_URI en backend/.env");
+// Conexión Mongo
+if (!process.env.MONGO_URI) {
+  console.error("❌ Falta MONGO_URI en .env (MongoDB no se conectará).");
+  process.exit(1);
 } else {
   mongoose
-    .connect(MONGO_URI, { useNewUrlParser: true, useUnifiedTopology: true })
-    .then(() => console.log("MongoDB conectado"))
-    .catch((err) => console.error("Error MongoDB:", err.message));
+    .connect(process.env.MONGO_URI)
+    .then(() => console.log("✅ Conectado a MongoDB"))
+    .catch((e) => {
+      console.error("❌ Error conectando a MongoDB:", e.message);
+      process.exit(1);
+    });
 }
 
-// Health
-app.get("/api/health", (_req, res) => {
-  const db = mongoose.connection.readyState === 1 ? "mongo" : "down";
-  res.json({ ok: true, db });
+// Rutas bajo /api
+app.use("/api", apiRouter);
+
+// Middleware de manejo de errores
+app.use((err, req, res, next) => {
+  console.error("Error:", err.message);
+  res.status(500).json({ message: "Error interno del servidor" });
 });
 
-// Rutas
-app.use("/api/auth", authRouter);
-app.use("/api/products", productsRouter);
-app.use("/api/stripe", stripeRouter);
+// Ruta 404
+app.use((req, res) => {
+  res.status(404).json({ message: "Ruta no encontrada" });
+});
 
-// Start
-app.listen(PORT, () => console.log(`Backend en http://localhost:${PORT}`));
+// Arranque
+const PORT = process.env.PORT || 3000;
+app.listen(PORT, () => console.log(`🚀 Backend escuchando en puerto ${PORT}`));

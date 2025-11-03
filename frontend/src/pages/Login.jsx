@@ -4,6 +4,7 @@ import { useAuth } from "../contexts/AuthContext.jsx";
 import LoadingSpinner from "../components/common/LoadingSpinner.jsx";
 import ErrorMessage from "../components/common/ErrorMessage.jsx";
 
+
 export default function Login() {
   const { login, loading } = useAuth();
   const [email, setEmail] = useState("");
@@ -14,17 +15,28 @@ export default function Login() {
   async function handleSubmit(e) {
     e.preventDefault();
     setErr("");
+    
+    console.log("🚀 Formulario enviado con:", { email, password });
+    console.log("🔍 Función login del contexto:", login);
+    
     try {
-      await login({ email, password });
+      const result = await login({ email, password });
+      console.log("✅ Login exitoso desde contexto:", result);
+      console.log("🔄 Navegando a la página principal...");
       nav("/");
+      console.log("✅ Navegación ejecutada");
     } catch (e) {
-      setErr(e?.response?.data?.message || "Error de inicio de sesión");
+      console.error("❌ Error en login desde contexto:", e);
+      setErr(e?.response?.data?.message || e?.message || "Error de inicio de sesión");
     }
   }
 
   return (
     <section className="max-w-md mx-auto px-4 py-10">
       <h1 className="text-2xl font-bold mb-6">Iniciar sesión</h1>
+      
+
+
       <ErrorMessage>{err}</ErrorMessage>
       <form onSubmit={handleSubmit} className="space-y-4">
         <div>

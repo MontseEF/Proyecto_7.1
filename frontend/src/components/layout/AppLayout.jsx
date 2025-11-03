@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { Outlet, Link, NavLink } from "react-router-dom";
+import { useAuth } from "../../contexts/AuthContext.jsx";
 
 function CartIcon() {
   return (
@@ -24,6 +25,7 @@ const Icon = {
 
 export default function AppLayout() {
   const [open, setOpen] = useState(false);
+  const { user, logout } = useAuth();
 
   const linkClass = ({ isActive }) =>
     `block px-3 py-2 rounded-md text-sm font-medium ${
@@ -41,14 +43,32 @@ export default function AppLayout() {
               <span className="font-bold text-white text-lg">Ferretería Zona Franca</span>
             </Link>
 
-            {/* Orden: Inicio, Productos, Carrito, Ingresar */}
+            {/* Orden: Inicio, Productos, Carrito, Ingresar/Usuario */}
             <div className="hidden md:flex items-center gap-1">
               <NavLink to="/" className={linkClass}>Inicio</NavLink>
               <NavLink to="/productos" className={linkClass}>Productos</NavLink>
               <NavLink to="/cart" className={linkClass}>
                 <span className="flex items-center gap-2"><CartIcon /> Carrito</span>
               </NavLink>
-              <NavLink to="/login" className={linkClass}>Ingresar</NavLink>
+              
+              {user ? (
+                <div className="flex items-center gap-2">
+                  <span className="text-white/90 text-sm px-3 py-2">
+                    Hola, {user.name}
+                  </span>
+                  <button 
+                    onClick={() => {
+                      logout();
+                      console.log("🚪 Usuario deslogueado");
+                    }}
+                    className="px-3 py-2 rounded-md text-sm font-medium text-white/90 hover:text-white hover:bg-amber-700/20"
+                  >
+                    Salir
+                  </button>
+                </div>
+              ) : (
+                <NavLink to="/login" className={linkClass}>Ingresar</NavLink>
+              )}
             </div>
 
             <button
@@ -69,7 +89,26 @@ export default function AppLayout() {
               <NavLink to="/cart" className={linkClass} onClick={() => setOpen(false)}>
                 <span className="flex items-center gap-2"><CartIcon /> Carrito</span>
               </NavLink>
-              <NavLink to="/login" className={linkClass} onClick={() => setOpen(false)}>Ingresar</NavLink>
+              
+              {user ? (
+                <div className="border-t border-amber-700/30 mt-2 pt-2">
+                  <div className="px-3 py-2 text-white/90 text-sm">
+                    Hola, {user.name}
+                  </div>
+                  <button 
+                    onClick={() => {
+                      logout();
+                      setOpen(false);
+                      console.log("🚪 Usuario deslogueado");
+                    }}
+                    className={linkClass}
+                  >
+                    Salir
+                  </button>
+                </div>
+              ) : (
+                <NavLink to="/login" className={linkClass} onClick={() => setOpen(false)}>Ingresar</NavLink>
+              )}
             </div>
           )}
         </nav>

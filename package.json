@@ -1,0 +1,24 @@
+{
+  "name": "proyecto_7.1",
+  "version": "1.0.0",
+  "description": "",
+  "main": "test-api.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/MontseEF/Proyecto_7_final.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "type": "commonjs",
+  "bugs": {
+    "url": "https://github.com/MontseEF/Proyecto_7_final/issues"
+  },
+  "homepage": "https://github.com/MontseEF/Proyecto_7_final#readme",
+  "dependencies": {
+    "axios": "^1.13.1"
+  }
+}

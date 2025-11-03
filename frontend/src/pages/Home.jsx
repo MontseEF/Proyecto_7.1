@@ -1,7 +1,9 @@
-// src/pages/Home.jsx
 import Products from "./Products.jsx";
+import { useAuth } from "../contexts/AuthContext.jsx";
 
 export default function Home() {
+  const { user } = useAuth();
+
   return (
     <div>
       {/* HERO gris suave */}
@@ -12,6 +14,7 @@ export default function Home() {
         <p className="mt-4 text-lg md:text-xl font-medium text-[#b86b2a]">
           La compañera de todos tus proyectos
         </p>
+
       </section>
 
       {/* GRID de productos */}
@@ -22,4 +25,3 @@ export default function Home() {
     </div>
   );
 }
-
