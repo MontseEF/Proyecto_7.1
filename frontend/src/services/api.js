@@ -11,18 +11,27 @@ async function req(path, { method = "GET", body } = {}) {
   
   console.log(`API Request: ${method} ${BASE}${path}`, { body, headers });
   
-  const res = await fetch(`${BASE}${path}`, {
-    method,
-    headers,
-    body: body ? JSON.stringify(body) : undefined,
-  });
-  
-  const data = await res.json().catch(() => ({}));
-  
-  console.log(`API Response: ${res.status}`, data);
-  
-  if (!res.ok) throw { response: { data, status: res.status } };
-  return { data };
+  try {
+    const res = await fetch(`${BASE}${path}`, {
+      method,
+      headers,
+      body: body ? JSON.stringify(body) : undefined,
+      credentials: 'include', // Para enviar cookies si es necesario
+    });
+    
+    const data = await res.json().catch(() => ({}));
+    
+    console.log(`API Response: ${res.status}`, data);
+    
+    if (!res.ok) throw { response: { data, status: res.status } };
+    return { data };
+  } catch (error) {
+    console.error('API Error:', error);
+    if (error.response) {
+      throw error;
+    }
+    throw { response: { data: { message: 'Error de conexión' }, status: 0 } };
+  }
 }
 
 export const api = {
