@@ -1,21 +1,11 @@
 export default function ProductCard({ product, onAdd }) {
   const { name, price, description, stock, image } = product;
 
-  const fixImage = (path) => {
-    if (!path) return "/logo.jpeg";
-
-    return path
-      .replace(/^public\//, "/")
-      .replace(/^\/public\//, "/")
-      .replace(/^uploads?\//, "/")
-      .replace(/^\/uploads?\//, "/");
-  };
-
   return (
     <div className="group rounded-xl border border-gray-200 bg-white shadow-sm transition hover:shadow-md">
       <div className="aspect-[4/3] w-full overflow-hidden rounded-t-xl bg-gray-50">
         <img
-          src={fixImage(image)}
+          src={image || "/logo.jpeg"}
           alt={name}
           className="h-full w-full object-contain p-4 transition group-hover:scale-[1.02]"
           onError={(e) => { e.currentTarget.src = "/logo.jpeg"; }}
