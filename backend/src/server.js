@@ -1,53 +1,54 @@
+// backend/src/server.js
 require("dotenv/config");
 const express = require("express");
 const cors = require("cors");
 const helmet = require("helmet");
 const morgan = require("morgan");
+const cookieParser = require("cookie-parser");
 const mongoose = require("mongoose");
 
-const apiRouter = require("./router");
+const apiRouter = require("./router"); 
 
 const app = express();
+app.set("trust proxy", 1);
 
-// Middlewares
 app.use(express.json());
+app.use(cookieParser());
 app.use(helmet());
 app.use(morgan("dev"));
-app.use(
-  cors({
-    origin: process.env.CORS_ORIGIN || "http://localhost:5173",
-    credentials: true,
-  })
-);
 
-// Conexión Mongo
-if (!process.env.MONGO_URI) {
-  console.error("❌ Falta MONGO_URI en .env (MongoDB no se conectará).");
-  process.exit(1);
-} else {
-  mongoose
-    .connect(process.env.MONGO_URI)
-    .then(() => console.log("✅ Conectado a MongoDB"))
-    .catch((e) => {
-      console.error("❌ Error conectando a MongoDB:", e.message);
-      process.exit(1);
-    });
-}
+const allowed = (process.env.CORS_ORIGIN || "http://localhost:5173")
+  .split(",")
+  .map(s => s.trim())
+  .filter(Boolean);
 
-// Rutas bajo /api
+app.use(cors({
+  origin: (origin, cb) => (!origin || allowed.includes(origin)) ? cb(null, true) : cb(new Error("CORS: " + origin)),
+  credentials: true,
+}));
+
+app.get("/", (_, res) => res.send("API Ferretería OK"));
+app.get("/api/health", (_, res) => res.json({ status: "ok", at: new Date() }));
+
 app.use("/api", apiRouter);
 
-// Middleware de manejo de errores
+app.use((req, res) => res.status(404).json({ message: "Ruta no encontrada" }));
 app.use((err, req, res, next) => {
-  console.error("Error:", err.message);
+  console.error("💥 Error no manejado:", err.message);
   res.status(500).json({ message: "Error interno del servidor" });
 });
 
-// Ruta 404
-app.use((req, res) => {
-  res.status(404).json({ message: "Ruta no encontrada" });
-});
-
-// Arranque
 const PORT = process.env.PORT || 3000;
-app.listen(PORT, () => console.log(`🚀 Backend escuchando en puerto ${PORT}`));
+const URI = process.env.MONGO_URI;
+
+(async () => {
+  try {
+    if (!URI) throw new Error("MONGO_URI no está definido");
+    await mongoose.connect(URI);
+    console.log("✅ MongoDB conectado");
+    app.listen(PORT, () => console.log(`🚀 Backend escuchando en puerto ${PORT}`));
+  } catch (e) {
+    console.error("❌ No se pudo iniciar el servidor:", e.message);
+    process.exit(1);
+  }
+})();
